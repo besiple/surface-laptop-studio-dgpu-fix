@@ -1,0 +1,48 @@
+--- a/kernel-open/nvidia/nv-acpi.c
++++ b/kernel-open/nvidia/nv-acpi.c
+@@ -793,10 +793,45 @@
+         pathname   = "\\_SB.NPCF._DSM";
+     }
+ 
++    if (acpiNvpcfDsmFunction && acpiDsmSubFunction == 8)
++    {
++        static const NvU8 mock_dc_table[21] = {
++            0x10, 0x04, 0x11, 0x01,
++            100,
++            0x10, 0x27, 0x00, 0x00,
++            0x98, 0x3A, 0x00, 0x00,
++            0x98, 0x3A, 0x00, 0x00,
++            0xB8, 0x88, 0x00, 0x00
++        };
++        if (pOutData && pSize && *pSize >= sizeof(mock_dc_table))
++        {
++            memcpy(pOutData, mock_dc_table, sizeof(mock_dc_table));
++            *pSize = sizeof(mock_dc_table);
++            nv_printf(NV_DBG_ERRORS, "NVRM: Synthesized Surface DC Power Limits Table for NVPCF Subfunc 8\n");
++            os_free_mem(argument3);
++            return NV_OK;
++        }
++    }
++
+     rmStatus = nv_acpi_evaluate_dsm_method(dev_handle, pathname, pAcpiDsmGuid, acpiDsmRev,
+                                            acpiDsmSubFunction, argument3, inParamSize,
+                                            NV_FALSE, NULL, pOutData, pSize);
+ 
++    if (rmStatus == NV_OK && acpiNvpcfDsmFunction && acpiDsmSubFunction == 0)
++    {
++        if (pOutData && pSize && *pSize >= 1)
++        {
++            nv_printf(NV_DBG_ERRORS,
++                      "NVRM: Patching Surface NVPCF Function 0 mask from 0x%02x to 0xFF\n",
++                      ((NvU8 *)pOutData)[0]);
++            ((NvU8 *)pOutData)[0] = 0xFF;
++            if (*pSize >= 2)
++            {
++                ((NvU8 *)pOutData)[1] |= 0x01;
++            }
++        }
++    }
++
+     os_free_mem(argument3);
+     return rmStatus;
+ }
