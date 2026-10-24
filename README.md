@@ -48,7 +48,11 @@ By using `acpi_call`, we initialize `MSHW0216` at boot time and on system resume
 2. `_SB.SGPC._DSM bbbf19da988b8b7429ced12810bfe9d90 0 1 1`
    * Enables SMF / Dynamic boost parameters
 
-Now, when the GPU wakes from D3cold, `PRPD._ON` sees `SACT == 1`, **does NOT send `0xD5`**, and the GPU runs at its full 35W/50W TGP!
+Now, when the GPU wakes from D3cold, `PRPD._ON` sees `SACT == 1`, **does NOT send `0xD5`**, and the GPU runs at its full sustained **35W Base TGP** (no longer throttled to 10W!).
+
+### Note on 35W Base vs 50W Dynamic Boost
+- **35W Base TGP:** Fully restored and verified. Under 3D load, the card hits P0 state, full core clocks (~1700+ MHz), and full memory clocks, delivering full 35W performance (~750–800 FPS in `glmark2`).
+- **50W Dynamic Boost:** The mobile RTX 3050 Ti has a 35W Base + 15W Dynamic Boost ceiling. Reaching the extra 15W boost requires the `nvidia-powerd` daemon. On Surface devices under Linux, `nvidia-powerd` currently fails because Microsoft's UEFI does not expose standard NVPCF SBIOS power tables. Until a workaround for `nvidia-powerd` is found, the hardware operates at its stable 35W Base TGP.
 
 ---
 
