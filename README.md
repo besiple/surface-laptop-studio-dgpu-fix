@@ -109,10 +109,10 @@ sudo reboot
 ## ⚡ Memory Overclock (+650 MHz / 6.15 GHz)
 
 The RTX 3050 Ti Mobile memory runs at 5501 MHz default. Testing demonstrated:
-* Default: 5501 MHz (~740 FPS in `glmark2`)
-* +500 MHz: 6001 MHz (~775 FPS)
-* **+650 MHz (6151 MHz / 6.15 GHz): ~791 FPS** *(Optimal sweet spot without EDC error-correction overhead)*
-* +750 MHz: 6251 MHz (~789 FPS — EDC latency begins degrading throughput)
+* Default: 5501 MHz
+* +500 MHz: 6001 MHz
+* **+650 MHz (6151 MHz / 6.15 GHz): Maximum stable throughput** *(Optimal sweet spot without EDC error-correction overhead)*
+* +750 MHz: 6251 MHz (EDC latency begins degrading memory throughput)
 
 Apply dynamically with `nvidia-settings`:
 ```bash
@@ -123,10 +123,10 @@ nvidia-settings -a "[gpu:0]/GPUMemoryTransferRateOffsetAllPerformanceLevels=1300
 
 ## 🔍 Verification
 
-After rebooting:
+After installation / reboot:
 
 ```bash
-# 1. Verify 50.00 W Current Power Limit:
+# 1. Verify 50.00 W Current Power Limit ceiling:
 nvidia-smi -q -d POWER | grep -A 5 "GPU Ceiling Power Limit"
 # Output:
 #     GPU Ceiling Power Limit
@@ -138,9 +138,25 @@ nvidia-smi -q -d POWER | grep -A 5 "GPU Ceiling Power Limit"
 cat /sys/bus/pci/devices/0000:f3:00.0/power/runtime_status
 # Output: suspended
 
-# 3. Check live power & performance in game or benchmark:
-mangohud prime-run glmark2
-# or run any game via Steam with MANGOHUD=1 %command%
+# 3. Check live power draw under real 3D load:
+# (Note: Old lightweight tests like glmark2 are CPU-bound and too light to draw 50W.
+#  Use a heavy modern 3D workload to observe the full 47W - 50W draw with MangoHud):
+#
+# Option A: Steam games (Cyberpunk, Witcher 3, Horizon, etc.)
+#   Set Launch Options in Steam: MANGOHUD=1 %command%
+#
+# Option B: Minecraft with Iris / Sodium / BSL / Complementary Shaders
+#   Launch via Prism Launcher / Modrinth with MangoHud enabled (draws 47-49W live)
+#
+# Option C: Unigine Superposition Benchmark (Native Linux)
+#   Pushes 100% GPU saturation up to the full 50.0W ceiling.
+```
+
+### Uninstallation
+
+To revert all changes, restore factory power limits (35W), and remove services:
+```bash
+sudo ./uninstall.sh
 ```
 
 ---
