@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
+# ==============================================================================
+# Surface Laptop Studio dGPU Fix Uninstaller
+# Author: besiple (https://github.com/besiple/surface-laptop-studio-dgpu-fix)
+# Copyright (c) 2026 besiple. All rights reserved.
+# Licensed under the MIT License.
+# ==============================================================================
 set -e
 
-echo "=== Surface Laptop Studio dGPU Fix Uninstaller ==="
+echo "=== Surface Laptop Studio dGPU Fix Uninstaller (by besiple) ==="
 
 if [ "$EUID" -ne 0 ]; then
   echo "[-] Please run as root (e.g. sudo ./uninstall.sh)"

@@ -172,6 +172,15 @@ Detailed technical writeups and reverse engineering dumps are preserved in the `
 
 ## 🤝 Credits & Acknowledgements
 
-* **besiple** — Research, reversing, hardware testing, and repository author.
+* **besiple** — Research, reverse engineering, hardware validation, and repository author.
 * **Google DeepMind Antigravity & Claude Opus 5.5** — Collaborative ACPI reverse engineering, driver source analysis, and disassembly.
 * **Linux-Surface Team** — Foundation for Surface hardware support on Linux.
+
+---
+
+## 📄 License & Attribution
+
+This project is licensed under the [MIT License](LICENSE) — Copyright (c) 2026 **besiple**.
+
+> **Notice on Attribution**: You are free to use, fork, adapt, and integrate this solution into your own projects, scripts, or system utilities (such as `surface-control` or `linux-surface`). In accordance with the MIT License, **explicit attribution to the original author (besiple)** and a link back to this repository must be retained in all copies or substantial portions of the software.
+

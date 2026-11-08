@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
+# ==============================================================================
+# Surface Laptop Studio dGPU 10W Throttle Fix & 50W Power Uncapper
+# Author: besiple (https://github.com/besiple/surface-laptop-studio-dgpu-fix)
+# Copyright (c) 2026 besiple. All rights reserved.
+# Licensed under the MIT License.
+# ==============================================================================
 set -e
 
-echo "=== Surface Laptop Studio dGPU 10W Bug Fix & D3cold Enabler ==="
+echo "=== Surface Laptop Studio dGPU 10W Bug Fix & 50W Enabler (by besiple) ==="
 
 if [ "$EUID" -ne 0 ]; then
   echo "[-] Please run as root (e.g. sudo ./install.sh)"
@@ -30,8 +36,12 @@ echo "acpi_call" > /etc/modules-load.d/acpi_call.conf
 echo "[3/6] Installing SGPC (MSHW0216) initialization script..."
 cat << "EOF" > /usr/local/bin/surface-dgpu-init
 #!/bin/bash
-# Initialize Surface Graphics Power Controller (MSHW0216 / SGPC)
-# Fixes the Surface Laptop Studio 10W power limit throttle bug upon D3cold wake-up
+# ==============================================================================
+# Surface Graphics Power Controller (MSHW0216 / SGPC) Initializer
+# Author: besiple (https://github.com/besiple/surface-laptop-studio-dgpu-fix)
+# Copyright (c) 2026 besiple. All rights reserved.
+# Licensed under the MIT License.
+# ==============================================================================
 modprobe acpi_call 2>/dev/null
 if [ -e /proc/acpi/call ]; then
     # Function 7 with Arg3=1 sets SACT=1, clears negative power offsets, and sends unthrottle notification 0xD1
