@@ -138,7 +138,14 @@ nvidia-smi -q -d POWER | grep -A 5 "GPU Ceiling Power Limit"
 cat /sys/bus/pci/devices/0000:f3:00.0/power/runtime_status
 # Output: suspended
 
-# 3. Check live power draw under real 3D load:
+# 3. Verify +650 MHz Memory Overclock (6151 MHz max clock):
+nvidia-smi -q -d CLOCK | grep -A 5 "Max Clocks"
+# Output:
+#     Max Clocks
+#         Graphics : 2100 MHz
+#         Memory   : 6151 MHz
+
+# 4. Check live power draw under real 3D load:
 # (Note: Old lightweight tests like glmark2 are CPU-bound and too light to draw 50W.
 #  Use a heavy modern 3D workload to observe the full 47W - 50W draw with MangoHud):
 #

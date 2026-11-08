@@ -53,6 +53,20 @@ if [ -e /proc/acpi/call ]; then
     # Function 1 with Arg3=1 enables SMF Boost
     echo '\_SB.SGPC._DSM bbbf19da988b8b7429ced12810bfe9d90 0 1 1' > /proc/acpi/call
 fi
+
+# Apply VRAM Memory Clock Offset (+650 MHz / 1300 MT/s effective sweet spot) via NVML
+python3 -c "
+import ctypes
+try:
+    nvml = ctypes.CDLL('libnvidia-ml.so.1')
+    nvml.nvmlInit()
+    h = ctypes.c_void_p()
+    if nvml.nvmlDeviceGetHandleByIndex(0, ctypes.byref(h)) == 0:
+        nvml.nvmlDeviceSetMemClkVfOffset(h, 1300)
+    nvml.nvmlShutdown()
+except Exception:
+    pass
+" 2>/dev/null || true
 EOF
 chmod +x /usr/local/bin/surface-dgpu-init
 
