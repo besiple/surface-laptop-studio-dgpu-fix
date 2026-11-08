@@ -97,6 +97,11 @@ sudo ./install.sh
 sudo reboot
 ```
 
+### Installation Options:
+* **`sudo ./install.sh`** (Default): Installs the 50W unlock + 10W sleep throttle fix with stock memory clocks. Prompts interactively if you'd like to enable the optional +650 MHz VRAM overclock.
+* **`sudo ./install.sh --mem-oc`**: Enables both the 50W unlock and the +650 MHz VRAM memory overclock (6.15 GHz) non-interactively.
+* **`sudo ./install.sh --no-oc`**: Forces stock VRAM memory clocks non-interactively.
+
 ### What `install.sh` does:
 1. Installs and loads the `acpi_call` kernel module.
 2. Deploys `/usr/local/bin/surface-dgpu-init` to configure `MSHW0216` (50W TGP + SACT=1 unthrottle).

@@ -9,6 +9,31 @@ set -e
 
 echo "=== Surface Laptop Studio dGPU 10W Bug Fix & 50W Enabler (by besiple) ==="
 
+ENABLE_MEM_OC=false
+MEM_OC_EXPLICIT=false
+
+for arg in "$@"; do
+    case "$arg" in
+        --mem-oc|--oc)
+            ENABLE_MEM_OC=true
+            MEM_OC_EXPLICIT=true
+            ;;
+        --no-oc|--no-mem-oc)
+            ENABLE_MEM_OC=false
+            MEM_OC_EXPLICIT=true
+            ;;
+    esac
+done
+
+if [ "$MEM_OC_EXPLICIT" = false ] && [ -t 0 ]; then
+    echo ""
+    echo "Optional: Microsoft tuned the GDDR6 VRAM down to 5.5 GHz for battery efficiency."
+    read -r -p "Would you like to enable the +650 MHz VRAM memory overclock sweet spot (6.15 GHz)? [y/N]: " oc_answer
+    if [[ "$oc_answer" =~ ^[Yy]$ ]]; then
+        ENABLE_MEM_OC=true
+    fi
+fi
+
 if [ "$EUID" -ne 0 ]; then
   echo "[-] Please run as root (e.g. sudo ./install.sh)"
   exit 1
@@ -53,6 +78,11 @@ if [ -e /proc/acpi/call ]; then
     # Function 1 with Arg3=1 enables SMF Boost
     echo '\_SB.SGPC._DSM bbbf19da988b8b7429ced12810bfe9d90 0 1 1' > /proc/acpi/call
 fi
+EOF
+
+if [ "$ENABLE_MEM_OC" = true ]; then
+    echo "      Applying optional +650 MHz VRAM memory overclock..."
+    cat << "EOF" >> /usr/local/bin/surface-dgpu-init
 
 # Apply VRAM Memory Clock Offset (+650 MHz / 1300 MT/s effective sweet spot) via NVML
 python3 -c "
@@ -68,6 +98,9 @@ except Exception:
     pass
 " 2>/dev/null || true
 EOF
+else
+    echo "      VRAM Overclock: Skipped (keeping factory stock 5.5 GHz)"
+fi
 chmod +x /usr/local/bin/surface-dgpu-init
 
 echo "[4/6] Creating systemd service & resume hook..."
