@@ -34,9 +34,11 @@ cat << "EOF" > /usr/local/bin/surface-dgpu-init
 # Fixes the Surface Laptop Studio 10W power limit throttle bug upon D3cold wake-up
 modprobe acpi_call 2>/dev/null
 if [ -e /proc/acpi/call ]; then
-    # Function 7 with Arg3=1 sets SACT=1, clears negative power offsets (PWRA=0, PWRD=0), and sends unthrottle notification 0xD1
+    # Function 7 with Arg3=1 sets SACT=1, clears negative power offsets, and sends unthrottle notification 0xD1
     echo '\_SB.SGPC._DSM bbbf19da988b8b7429ced12810bfe9d90 0 7 1' > /proc/acpi/call
-    # Function 2 with Arg3=0x0320 sets SPWR to 50W (0x32 = 50W max AC power GAMX) and notifies NPCF
+    # Function 3 with Arg3=0x78 sets AC cTGP power offset to +15W (120 * 125mW = +15000mW = +15W cTGP boost)
+    echo '\_SB.SGPC._DSM bbbf19da988b8b7429ced12810bfe9d90 0 3 0x78' > /proc/acpi/call
+    # Function 2 with Arg3=0x0320 sets SPWR to 50W (800 * 0.0625W = 50.0W) and notifies NPCF (0xC0)
     echo '\_SB.SGPC._DSM bbbf19da988b8b7429ced12810bfe9d90 0 2 0x0320' > /proc/acpi/call
     # Function 1 with Arg3=1 enables SMF Boost
     echo '\_SB.SGPC._DSM bbbf19da988b8b7429ced12810bfe9d90 0 1 1' > /proc/acpi/call
