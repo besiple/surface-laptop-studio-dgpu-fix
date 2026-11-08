@@ -1,0 +1,268 @@
+{
+  "records": [
+    {
+      "timestamp": "2026-11-08T12:10:36.896934",
+      "ac_online": 1,
+      "cpu_power_w": 19.4,
+      "cpu_freq_mhz": 3063,
+      "cpu_temp_c": 29.0,
+      "gpu": {
+        "power_draw_w": 4.11,
+        "enforced_limit_w": 35.0,
+        "default_limit_w": 35.0,
+        "max_limit_w": 50.0,
+        "clock_core_mhz": 210,
+        "clock_mem_mhz": 405,
+        "gpu_temp_c": 53,
+        "throttle_reasons": "0x0000000000000001"
+      }
+    },
+    {
+      "timestamp": "2026-11-08T12:10:37.927142",
+      "ac_online": 1,
+      "cpu_power_w": 21.67,
+      "cpu_freq_mhz": 4300,
+      "cpu_temp_c": 32.0,
+      "gpu": {
+        "power_draw_w": 4.08,
+        "enforced_limit_w": 35.0,
+        "default_limit_w": 35.0,
+        "max_limit_w": 50.0,
+        "clock_core_mhz": 210,
+        "clock_mem_mhz": 405,
+        "gpu_temp_c": 54,
+        "throttle_reasons": "0x0000000000000001"
+      }
+    },
+    {
+      "timestamp": "2026-11-08T12:10:38.953421",
+      "ac_online": 1,
+      "cpu_power_w": 19.83,
+      "cpu_freq_mhz": 4300,
+      "cpu_temp_c": 28.0,
+      "gpu": {
+        "power_draw_w": 4.08,
+        "enforced_limit_w": 35.0,
+        "default_limit_w": 35.0,
+        "max_limit_w": 50.0,
+        "clock_core_mhz": 210,
+        "clock_mem_mhz": 405,
+        "gpu_temp_c": 54,
+        "throttle_reasons": "0x0000000000000001"
+      }
+    },
+    {
+      "timestamp": "2026-11-08T12:10:39.978001",
+      "ac_online": 1,
+      "cpu_power_w": 21.59,
+      "cpu_freq_mhz": 4299,
+      "cpu_temp_c": 30.0,
+      "gpu": {
+        "power_draw_w": 4.11,
+        "enforced_limit_w": 35.0,
+        "default_limit_w": 35.0,
+        "max_limit_w": 50.0,
+        "clock_core_mhz": 210,
+        "clock_mem_mhz": 405,
+        "gpu_temp_c": 54,
+        "throttle_reasons": "0x0000000000000001"
+      }
+    },
+    {
+      "timestamp": "2026-11-08T12:10:41.009744",
+      "ac_online": 1,
+      "cpu_power_w": 20.63,
+      "cpu_freq_mhz": 4287,
+      "cpu_temp_c": 28.0,
+      "gpu": {
+        "power_draw_w": 4.11,
+        "enforced_limit_w": 35.0,
+        "default_limit_w": 35.0,
+        "max_limit_w": 50.0,
+        "clock_core_mhz": 210,
+        "clock_mem_mhz": 405,
+        "gpu_temp_c": 54,
+        "throttle_reasons": "0x0000000000000001"
+      }
+    },
+    {
+      "timestamp": "2026-11-08T12:10:42.039446",
+      "ac_online": 1,
+      "cpu_power_w": 18.4,
+      "cpu_freq_mhz": 4299,
+      "cpu_temp_c": 28.0,
+      "gpu": {
+        "power_draw_w": 4.09,
+        "enforced_limit_w": 35.0,
+        "default_limit_w": 35.0,
+        "max_limit_w": 50.0,
+        "clock_core_mhz": 210,
+        "clock_mem_mhz": 405,
+        "gpu_temp_c": 54,
+        "throttle_reasons": "0x0000000000000001"
+      }
+    },
+    {
+      "timestamp": "2026-11-08T12:10:43.070110",
+      "ac_online": 1,
+      "cpu_power_w": 21.18,
+      "cpu_freq_mhz": 4299,
+      "cpu_temp_c": 28.0,
+      "gpu": {
+        "power_draw_w": 4.08,
+        "enforced_limit_w": 35.0,
+        "default_limit_w": 35.0,
+        "max_limit_w": 50.0,
+        "clock_core_mhz": 210,
+        "clock_mem_mhz": 405,
+        "gpu_temp_c": 54,
+        "throttle_reasons": "0x0000000000000001"
+      }
+    },
+    {
+      "timestamp": "2026-11-08T12:10:44.102809",
+      "ac_online": 1,
+      "cpu_power_w": 19.84,
+      "cpu_freq_mhz": 4096,
+      "cpu_temp_c": 27.0,
+      "gpu": {
+        "power_draw_w": 4.08,
+        "enforced_limit_w": 35.0,
+        "default_limit_w": 35.0,
+        "max_limit_w": 50.0,
+        "clock_core_mhz": 210,
+        "clock_mem_mhz": 405,
+        "gpu_temp_c": 54,
+        "throttle_reasons": "0x0000000000000001"
+      }
+    },
+    {
+      "timestamp": "2026-11-08T12:10:45.131860",
+      "ac_online": 1,
+      "cpu_power_w": 20.95,
+      "cpu_freq_mhz": 4300,
+      "cpu_temp_c": 27.0,
+      "gpu": {
+        "power_draw_w": 4.09,
+        "enforced_limit_w": 35.0,
+        "default_limit_w": 35.0,
+        "max_limit_w": 50.0,
+        "clock_core_mhz": 210,
+        "clock_mem_mhz": 405,
+        "gpu_temp_c": 54,
+        "throttle_reasons": "0x0000000000000001"
+      }
+    },
+    {
+      "timestamp": "2026-11-08T12:10:46.162602",
+      "ac_online": 1,
+      "cpu_power_w": 22.4,
+      "cpu_freq_mhz": 1643,
+      "cpu_temp_c": 30.0,
+      "gpu": {
+        "power_draw_w": 4.1,
+        "enforced_limit_w": 35.0,
+        "default_limit_w": 35.0,
+        "max_limit_w": 50.0,
+        "clock_core_mhz": 210,
+        "clock_mem_mhz": 405,
+        "gpu_temp_c": 54,
+        "throttle_reasons": "0x0000000000000001"
+      }
+    },
+    {
+      "timestamp": "2026-11-08T12:10:47.192359",
+      "ac_online": 1,
+      "cpu_power_w": 21.99,
+      "cpu_freq_mhz": 4300,
+      "cpu_temp_c": 28.0,
+      "gpu": {
+        "power_draw_w": 4.1,
+        "enforced_limit_w": 35.0,
+        "default_limit_w": 35.0,
+        "max_limit_w": 50.0,
+        "clock_core_mhz": 210,
+        "clock_mem_mhz": 405,
+        "gpu_temp_c": 54,
+        "throttle_reasons": "0x0000000000000001"
+      }
+    },
+    {
+      "timestamp": "2026-11-08T12:10:48.227413",
+      "ac_online": 1,
+      "cpu_power_w": 18.7,
+      "cpu_freq_mhz": 4300,
+      "cpu_temp_c": 28.0,
+      "gpu": {
+        "power_draw_w": 4.1,
+        "enforced_limit_w": 35.0,
+        "default_limit_w": 35.0,
+        "max_limit_w": 50.0,
+        "clock_core_mhz": 210,
+        "clock_mem_mhz": 405,
+        "gpu_temp_c": 54,
+        "throttle_reasons": "0x0000000000000001"
+      }
+    },
+    {
+      "timestamp": "2026-11-08T12:10:49.255766",
+      "ac_online": 1,
+      "cpu_power_w": 19.52,
+      "cpu_freq_mhz": 2446,
+      "cpu_temp_c": 28.0,
+      "gpu": {
+        "power_draw_w": 4.07,
+        "enforced_limit_w": 35.0,
+        "default_limit_w": 35.0,
+        "max_limit_w": 50.0,
+        "clock_core_mhz": 210,
+        "clock_mem_mhz": 405,
+        "gpu_temp_c": 54,
+        "throttle_reasons": "0x0000000000000001"
+      }
+    },
+    {
+      "timestamp": "2026-11-08T12:10:50.288257",
+      "ac_online": 1,
+      "cpu_power_w": 19.94,
+      "cpu_freq_mhz": 2672,
+      "cpu_temp_c": 28.0,
+      "gpu": {
+        "power_draw_w": 4.07,
+        "enforced_limit_w": 35.0,
+        "default_limit_w": 35.0,
+        "max_limit_w": 50.0,
+        "clock_core_mhz": 210,
+        "clock_mem_mhz": 405,
+        "gpu_temp_c": 53,
+        "throttle_reasons": "0x0000000000000001"
+      }
+    },
+    {
+      "timestamp": "2026-11-08T12:10:51.319146",
+      "ac_online": 1,
+      "cpu_power_w": 25.86,
+      "cpu_freq_mhz": 3835,
+      "cpu_temp_c": 32.0,
+      "gpu": {
+        "power_draw_w": 4.08,
+        "enforced_limit_w": 35.0,
+        "default_limit_w": 35.0,
+        "max_limit_w": 50.0,
+        "clock_core_mhz": 210,
+        "clock_mem_mhz": 405,
+        "gpu_temp_c": 54,
+        "throttle_reasons": "0x0000000000000001"
+      }
+    }
+  ],
+  "summary": {
+    "avg_gpu_power_w": 4.09,
+    "max_gpu_power_w": 4.11,
+    "avg_gpu_limit_w": 35.0,
+    "max_gpu_limit_w": 35.0,
+    "avg_cpu_power_w": 20.793333333333333,
+    "max_cpu_power_w": 25.86,
+    "powerd_exceptions": 0
+  }
+}

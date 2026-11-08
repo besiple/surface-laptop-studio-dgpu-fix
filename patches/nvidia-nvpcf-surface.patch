@@ -1,6 +1,6 @@
 --- a/kernel-open/nvidia/nv-acpi.c
 +++ b/kernel-open/nvidia/nv-acpi.c
-@@ -793,10 +793,45 @@
+@@ -793,10 +793,73 @@
          pathname   = "\\_SB.NPCF._DSM";
      }
  
@@ -28,6 +28,34 @@
                                             acpiDsmSubFunction, argument3, inParamSize,
                                             NV_FALSE, NULL, pOutData, pSize);
  
++    if (rmStatus == NV_OK && acpiNvpcfDsmFunction && acpiDsmSubFunction == 1)
++    {
++        NvU8 *pBuf = (NvU8 *)pOutData;
++        if (pBuf && pSize && *pSize >= 27)
++        {
++            if (pBuf[0] == 0x20 && pBuf[4] == 0x21 && (pBuf[0x16] & 0x01))
++            {
++                NvU16 i;
++                NvU8 csum = 0;
++
++                nv_printf(NV_DBG_ERRORS,
++                          "NVRM: Surface NVPCF Experiment A: clearing QBOOST_DC_SUPPORT at 0x16\n");
++                pBuf[0x16] &= ~0x01;
++
++                for (i = 0; i < (*pSize - 1); i++)
++                {
++                    csum += pBuf[i];
++                }
++                csum = (~csum) + 1;
++
++                nv_printf(NV_DBG_ERRORS,
++                          "NVRM: Surface NVPCF Experiment A: updated csum at 0x%02x from 0x%02x to 0x%02x\n",
++                          *pSize - 1, pBuf[*pSize - 1], csum);
++                pBuf[*pSize - 1] = csum;
++            }
++        }
++    }
++
 +    if (rmStatus == NV_OK && acpiNvpcfDsmFunction && acpiDsmSubFunction == 0)
 +    {
 +        if (pOutData && pSize && *pSize >= 1)
