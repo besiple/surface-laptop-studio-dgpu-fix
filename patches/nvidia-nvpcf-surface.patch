@@ -60,18 +60,195 @@ diff -Naur a/kernel-open/nvidia/nv-acpi.c b/kernel-open/nvidia/nv-acpi.c
      os_free_mem(argument3);
      return rmStatus;
  }
-diff -Naur a/src/nvidia/arch/nvalloc/unix/src/osapi.c b/src/nvidia/arch/nvalloc/unix/src/osapi.c
---- a/src/nvidia/arch/nvalloc/unix/src/osapi.c	2026-11-19 20:33:09.222149998 +0200
-+++ b/src/nvidia/arch/nvalloc/unix/src/osapi.c	2026-11-19 20:33:09.308389271 +0200
-@@ -5645,6 +5645,7 @@
-     void              *fp;
-     THREAD_STATE_NODE threadState;
-     NV_STATUS         rmStatus = NV_OK;
-+    nv_state_t        *target_nv = NULL;
+diff -Naur a/src/nvidia/src/kernel/gpu/gpu.c b/src/nvidia/src/kernel/gpu/gpu.c
+--- a/src/nvidia/src/kernel/gpu/gpu.c	2026-11-20 01:06:29.479956436 +0200
++++ b/src/nvidia/src/kernel/gpu/gpu.c	2026-11-20 01:07:34.157295586 +0200
+@@ -862,47 +862,51 @@
  
-     NV_ENTER_RM_RUNTIME(sp,fp);
-     threadStateInit(&threadState, THREAD_STATE_FLAGS_NONE);
-@@ -5662,6 +5663,7 @@
+         NV_ASSERT_OR_RETURN(pEntry != NULL, NV_ERR_NOT_SUPPORTED);
+ 
+-        NV_ASSERT_OR_RETURN(pEntry->paramSize == paramsSize, NV_ERR_INVALID_PARAM_STRUCT);
+-        NV_PRINTF(LEVEL_INFO, "GPU Internal RM control 0x%08x on gpuInst:%x hClient:0x%08x hSubdevice:0x%08x\n",
+-                  cmd, pGpu->gpuInstance, hClient, hObject);
+-
+-        portMemSet(&rmCtrlParams, 0, sizeof(rmCtrlParams));
+-        rmCtrlParams.hClient    = hClient;
+-        rmCtrlParams.hObject    = hObject;
+-        rmCtrlParams.pGpu       = pGpu;
+-        rmCtrlParams.cmd        = cmd;
+-        rmCtrlParams.flags      = NVOS54_FLAGS_LOCK_BYPASS;
+-        rmCtrlParams.pParams    = pParams;
+-        rmCtrlParams.paramsSize = paramsSize;
+-        rmCtrlParams.secInfo.privLevel = RS_PRIV_LEVEL_KERNEL;
+-        rmCtrlParams.secInfo.paramLocation = PARAM_LOCATION_KERNEL;
+-        rmCtrlParams.bInternal  = NV_TRUE;
+-
+-        lockInfo.flags = RM_LOCK_FLAGS_NO_GPUS_LOCK | RM_LOCK_FLAGS_NO_CLIENT_LOCK;
+-        rmCtrlParams.pLockInfo = &lockInfo;
+-
+-        portMemSet(&callCtx, 0, sizeof(callCtx));
+-        callCtx.pResourceRef   = RES_GET_REF(pGpu->pCachedSubdevice);
+-        callCtx.pClient        = pGpu->pCachedRsClient;
+-        callCtx.secInfo        = rmCtrlParams.secInfo;
+-        callCtx.pServer        = &g_resServ;
+-        callCtx.pControlParams = &rmCtrlParams;
+-        callCtx.pLockInfo      = rmCtrlParams.pLockInfo;
+-
+-        NV_ASSERT_OK_OR_RETURN(resservSwapTlsCallContext(&oldCtx, &callCtx));
+-
+-        if (pEntry->paramSize == 0)
+-        {
+-            status = ((NV_STATUS(*)(void*))pEntry->pFunc)(pGpu->pCachedSubdevice);
+-        }
+-        else
++        if (pEntry->pFunc != NULL)
+         {
+-            status = ((NV_STATUS(*)(void*,void*))pEntry->pFunc)(pGpu->pCachedSubdevice, pParams);
+-        }
++            NV_ASSERT_OR_RETURN(pEntry->paramSize == paramsSize, NV_ERR_INVALID_PARAM_STRUCT);
++            NV_PRINTF(LEVEL_INFO, "GPU Internal RM control 0x%08x on gpuInst:%x hClient:0x%08x hSubdevice:0x%08x\n",
++                      cmd, pGpu->gpuInstance, hClient, hObject);
++
++            portMemSet(&rmCtrlParams, 0, sizeof(rmCtrlParams));
++            rmCtrlParams.hClient    = hClient;
++            rmCtrlParams.hObject    = hObject;
++            rmCtrlParams.pGpu       = pGpu;
++            rmCtrlParams.cmd        = cmd;
++            rmCtrlParams.flags      = NVOS54_FLAGS_LOCK_BYPASS;
++            rmCtrlParams.pParams    = pParams;
++            rmCtrlParams.paramsSize = paramsSize;
++            rmCtrlParams.secInfo.privLevel = RS_PRIV_LEVEL_KERNEL;
++            rmCtrlParams.secInfo.paramLocation = PARAM_LOCATION_KERNEL;
++            rmCtrlParams.bInternal  = NV_TRUE;
++
++            lockInfo.flags = RM_LOCK_FLAGS_NO_GPUS_LOCK | RM_LOCK_FLAGS_NO_CLIENT_LOCK;
++            rmCtrlParams.pLockInfo = &lockInfo;
++
++            portMemSet(&callCtx, 0, sizeof(callCtx));
++            callCtx.pResourceRef   = RES_GET_REF(pGpu->pCachedSubdevice);
++            callCtx.pClient        = pGpu->pCachedRsClient;
++            callCtx.secInfo        = rmCtrlParams.secInfo;
++            callCtx.pServer        = &g_resServ;
++            callCtx.pControlParams = &rmCtrlParams;
++            callCtx.pLockInfo      = rmCtrlParams.pLockInfo;
++
++            NV_ASSERT_OK_OR_RETURN(resservSwapTlsCallContext(&oldCtx, &callCtx));
++
++            if (pEntry->paramSize == 0)
++            {
++                status = ((NV_STATUS(*)(void*))pEntry->pFunc)(pGpu->pCachedSubdevice);
++            }
++            else
++            {
++                status = ((NV_STATUS(*)(void*,void*))pEntry->pFunc)(pGpu->pCachedSubdevice, pParams);
++            }
+ 
+-        NV_ASSERT_OK(resservRestoreTlsCallContext(oldCtx));
++            NV_ASSERT_OK(resservRestoreTlsCallContext(oldCtx));
++            return status;
++        }
+     }
+-    else
++
+     {
+         RM_API *pInternalRmApi = rmapiGetInterface(RMAPI_GPU_LOCK_INTERNAL);
+         NV_ASSERT_OR_RETURN(rmDeviceGpuLockIsOwner(pGpu->gpuInstance),
+diff -Naur a/src/nvidia/arch/nvalloc/unix/src/osapi.c b/src/nvidia/arch/nvalloc/unix/src/osapi.c
+--- a/src/nvidia/arch/nvalloc/unix/src/osapi.c	2026-11-20 01:06:29.488956436 +0200
++++ b/src/nvidia/arch/nvalloc/unix/src/osapi.c	2026-11-20 01:07:34.158870125 +0200
+@@ -31,6 +31,8 @@
+ #include <os/os.h>
+ #include <osapi.h>
+ #include <class/cl0000.h>
++#include <ctrl/ctrl2080/ctrl2080perf.h>
++#include <ctrl/ctrl2080/ctrl2080internal.h>
+ #include <rmosxfac.h> // Declares RmInitRm().
+ #include "gpu/gpu.h"
+ #include "pfmReqHndlr.h"
+@@ -2140,40 +2142,61 @@
+     RM_API            *pRmApi;
+     THREAD_STATE_NODE  threadState;
+     NV0000_CTRL_SYSTEM_PFM_REQ_HNDLR_CONTROL_PARAMS pfmReqHndlrControl = { 0 };
++    NV2080_CTRL_PERF_RATED_TDP_CONTROL_PARAMS tdpParams = { 0 };
++    NV2080_CTRL_CMD_INTERNAL_PMGR_PFM_REQ_HNDLR_CONFIGURE_TGP_MODE_PARAMS tgpParams = { 0 };
++    NV2080_CTRL_CMD_INTERNAL_PMGR_PFM_REQ_HNDLR_CONFIGURE_TURBO_V2_PARAMS turboParams = { 0 };
+ 
+     pRmApi = RmUnixRmApiPrologue(pNv, &threadState, RM_LOCK_MODULES_ACPI);
+     if (pRmApi == NULL)
+     {
++        NV_PRINTF(LEVEL_ERROR, "NVRM: RmAcpiEventPfmReqHndlrEventStatusChange: RmUnixRmApiPrologue failed\n");
+         return;
+     }
+ 
+-    pfmReqHndlrControl.command = NV0000_CTRL_CMD_SYSTEM_PFM_REQ_HNDLR_DATA_INIT_USING_SBIOS_AND_ACK;
+-    pfmReqHndlrControl.locale  = NV0000_CTRL_CMD_SYSTEM_PFM_REQ_HNDLR_LOCALE_SYSTEM;
+-    pfmReqHndlrControl.data    = 0;
++    // 1. Force rated TDP client to allow exceeding rated TDP (boost past 35W to 50W)
++    tdpParams.client = NV2080_CTRL_PERF_RATED_TDP_CLIENT_GLOBAL;
++    tdpParams.input = NV2080_CTRL_PERF_RATED_TDP_ACTION_FORCE_EXCEED;
++    tdpParams.vPstateType = NV2080_CTRL_PERF_VPSTATE_TURBO_BOOST;
++    rmStatus = pRmApi->Control(pRmApi,
++                               pNv->rmapi.hClient,
++                               pNv->rmapi.hSubDevice,
++                               NV2080_CTRL_CMD_PERF_RATED_TDP_SET_CONTROL,
++                               &tdpParams,
++                               sizeof(tdpParams));
++    NV_PRINTF(LEVEL_ERROR, "NVRM: Surface 50W: PERF_RATED_TDP_SET_CONTROL status=0x%x\n", rmStatus);
+ 
+-    //
+-    // NV0000_CTRL_CMD_SYSTEM_PFM_REQ_HNDLR_CONTROL is not a subdevice command.
+-    // But, Inside PRH module, the first GPU, which has PRH supported and
+-    // enabled will be grabbed with GPU manager. The RMAPI_API_LOCK_INTERNAL
+-    // will internally grab the GPU locks and wake-up all the GPUs. Ideally
+-    // this control call should be GPU specific command, if internally
+-    // it uses the GPU.
+-    //
++    // 2. Enable CTGP Mode
++    tgpParams.bEnable = NV_TRUE;
+     rmStatus = pRmApi->Control(pRmApi,
+                                pNv->rmapi.hClient,
++                               pNv->rmapi.hSubDevice,
++                               NV2080_CTRL_CMD_INTERNAL_PMGR_PFM_REQ_HNDLR_CONFIGURE_TGP_MODE,
++                               &tgpParams,
++                               sizeof(tgpParams));
++    NV_PRINTF(LEVEL_ERROR, "NVRM: Surface 50W: CONFIGURE_TGP_MODE status=0x%x\n", rmStatus);
++
++    // 3. Configure +15W Turbo Offset (15,000 mW) -> 35W + 15W = 50W TGP
++    turboParams.ctgpOffsetmW = 15000;
++    rmStatus = pRmApi->Control(pRmApi,
+                                pNv->rmapi.hClient,
+-                               NV0000_CTRL_CMD_SYSTEM_PFM_REQ_HNDLR_CONTROL,
+-                               (void *)&pfmReqHndlrControl,
+-                               sizeof(NV0000_CTRL_SYSTEM_PFM_REQ_HNDLR_CONTROL_PARAMS));
++                               pNv->rmapi.hSubDevice,
++                               NV2080_CTRL_CMD_INTERNAL_PMGR_PFM_REQ_HNDLR_CONFIGURE_TURBO_V2,
++                               &turboParams,
++                               sizeof(turboParams));
++    NV_PRINTF(LEVEL_ERROR, "NVRM: Surface 50W: CONFIGURE_TURBO_V2 (+15W) status=0x%x\n", rmStatus);
+ 
+-    RmUnixRmApiEpilogue(pNv, &threadState);
++    // 4. Also notify PRH data init
++    pfmReqHndlrControl.command = NV0000_CTRL_CMD_SYSTEM_PFM_REQ_HNDLR_DATA_INIT_USING_SBIOS_AND_ACK;
++    pfmReqHndlrControl.locale  = NV0000_CTRL_CMD_SYSTEM_PFM_REQ_HNDLR_LOCALE_SYSTEM;
++    pfmReqHndlrControl.data    = 0;
++    pRmApi->Control(pRmApi,
++                    pNv->rmapi.hClient,
++                    pNv->rmapi.hClient,
++                    NV0000_CTRL_CMD_SYSTEM_PFM_REQ_HNDLR_CONTROL,
++                    (void *)&pfmReqHndlrControl,
++                    sizeof(NV0000_CTRL_SYSTEM_PFM_REQ_HNDLR_CONTROL_PARAMS));
+ 
+-    if (rmStatus != NV_OK)
+-    {
+-        NV_PRINTF(LEVEL_ERROR,
+-                  "%s: Failed to handle ACPI PFM_REQ_HNDLR status change event, status=0x%x\n",
+-                  __FUNCTION__, rmStatus);
+-    }
++    RmUnixRmApiEpilogue(pNv, &threadState);
+ }
+ 
+ /*!
+@@ -5666,6 +5689,7 @@
              {
                 gpuNotifySubDeviceEvent(pGpu, NV2080_NOTIFIERS_NVPCF_EVENTS,
                                         NULL, 0, 0, 0);
@@ -79,7 +256,7 @@ diff -Naur a/src/nvidia/arch/nvalloc/unix/src/osapi.c b/src/nvidia/arch/nvalloc/
              }
              os_unref_dynamic_power(nv, NV_DYNAMIC_PM_FINE);
          }
-@@ -5669,6 +5671,13 @@
+@@ -5673,6 +5697,13 @@
      }
  
      threadStateFree(&threadState, THREAD_STATE_FLAGS_NONE);
@@ -92,4 +269,3 @@ diff -Naur a/src/nvidia/arch/nvalloc/unix/src/osapi.c b/src/nvidia/arch/nvalloc/
 +
      NV_EXIT_RM_RUNTIME(sp,fp);
  }
- 
