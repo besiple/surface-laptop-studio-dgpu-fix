@@ -67,6 +67,10 @@ cat << "EOF" > /usr/local/bin/surface-dgpu-init
 # Copyright (c) 2026 besiple. All rights reserved.
 # Licensed under the MIT License.
 # ==============================================================================
+
+# Ensure NVIDIA driver client is alive before firing ACPI notification
+nvidia-smi -q >/dev/null 2>&1 || true
+
 modprobe acpi_call 2>/dev/null
 if [ -e /proc/acpi/call ]; then
     # Function 7 with Arg3=1 sets SACT=1, clears negative power offsets, and sends unthrottle notification 0xD1
@@ -104,12 +108,15 @@ fi
 chmod +x /usr/local/bin/surface-dgpu-init
 
 echo "[4/6] Creating systemd service & resume hook..."
+systemctl enable --now nvidia-persistenced.service 2>/dev/null || true
+
 cat << "EOF" > /etc/systemd/system/surface-dgpu-init.service
 [Unit]
-Description=Initialize Surface Graphics Power Controller (Fix 10W Bug)
-DefaultDependencies=no
-After=systemd-modules-load.service
-Before=display-manager.service graphical.target nvidia-powerd.service
+Description=Initialize Surface Graphics Power Controller (Fix 10W Bug & Unlock 50W TGP)
+After=systemd-modules-load.service nvidia-persistenced.service
+Wants=nvidia-persistenced.service
+Before=display-manager.service graphical.target
+Conflicts=nvidia-powerd.service
 
 [Service]
 Type=oneshot
@@ -117,7 +124,7 @@ ExecStart=/usr/local/bin/surface-dgpu-init
 RemainAfterExit=yes
 
 [Install]
-WantedBy=basic.target
+WantedBy=graphical.target multi-user.target
 EOF
 
 mkdir -p /usr/lib/systemd/system-sleep/
