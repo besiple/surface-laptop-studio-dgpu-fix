@@ -125,7 +125,6 @@ cat << "EOF" > /usr/lib/systemd/system-sleep/surface-dgpu-init.sh
 #!/bin/bash
 if [ "$1" = "post" ]; then
     /usr/local/bin/surface-dgpu-init
-    systemctl restart nvidia-powerd.service
 fi
 EOF
 chmod +x /usr/lib/systemd/system-sleep/surface-dgpu-init.sh
@@ -151,19 +150,12 @@ if [ -n "$NVIDIA_SRC" ] && [ -f "$PATCH_FILE" ]; then
     else
         echo "      NVIDIA NVPCF Dynamic Boost patch already present."
     fi
-    # Patch nvidia-powerd binary if needed (bypasses uninitialized DC controller crash on Surface)
-    POWERD_PATCH="$(dirname "$0")/scripts/patch_nvidia_powerd.py"
-    if [ -f "$POWERD_PATCH" ] && [ -f /usr/bin/nvidia-powerd ]; then
-        echo "      Patching /usr/bin/nvidia-powerd for Surface compatibility..."
-        python3 "$POWERD_PATCH" /usr/bin/nvidia-powerd || true
-    fi
-
-    # Enable nvidia-powerd for 50W Dynamic Boost
+    # Mask incompatible nvidia-powerd (conflicts with Surface ACPI MSHW0216 power steering and forces 35W lock)
     if command -v systemctl >/dev/null 2>&1; then
-        echo "      Enabling nvidia-powerd.service..."
-        systemctl unmask nvidia-powerd 2>/dev/null || true
-        systemctl enable nvidia-powerd 2>/dev/null || true
-        systemctl restart nvidia-powerd 2>/dev/null || true
+        echo "      Masking conflicting nvidia-powerd.service..."
+        systemctl stop nvidia-powerd 2>/dev/null || true
+        systemctl disable nvidia-powerd 2>/dev/null || true
+        systemctl mask nvidia-powerd 2>/dev/null || true
     fi
 fi
 
