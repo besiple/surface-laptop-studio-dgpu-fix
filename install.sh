@@ -110,6 +110,7 @@ Description=Initialize Surface Graphics Power Controller (Fix 10W Bug)
 DefaultDependencies=no
 After=systemd-modules-load.service
 Before=display-manager.service graphical.target
+Conflicts=nvidia-powerd.service
 
 [Service]
 Type=oneshot
@@ -132,6 +133,12 @@ chmod +x /usr/lib/systemd/system-sleep/surface-dgpu-init.sh
 systemctl daemon-reload
 systemctl enable surface-dgpu-init.service
 /usr/local/bin/surface-dgpu-init
+
+# Disable conflicting nvidia-powerd (crashes on Surface and resets power limits)
+if systemctl is-enabled nvidia-powerd >/dev/null 2>&1 || systemctl is-active nvidia-powerd >/dev/null 2>&1; then
+    echo "      Disabling conflicting nvidia-powerd.service..."
+    systemctl disable --now nvidia-powerd 2>/dev/null || true
+fi
 
 echo "[5/6] Enabling Runtime D3 (D3cold / 0W idle) in modprobe and udev..."
 cat << "EOF" > /etc/modprobe.d/nvidia-runtimepm.conf
