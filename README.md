@@ -186,7 +186,6 @@ Detailed technical writeups and reverse engineering dumps are preserved in the `
 
 * **besiple** — Research, reverse engineering, hardware validation, and repository author.
 * **Google DeepMind Antigravity & Claude Opus 5.5** — Collaborative ACPI reverse engineering, driver source analysis, and disassembly.
-* **Linux-Surface Team** — Foundation for Surface hardware support on Linux.
 
 ---
 
