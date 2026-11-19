@@ -1,6 +1,7 @@
---- a/kernel-open/nvidia/nv-acpi.c
-+++ b/kernel-open/nvidia/nv-acpi.c
-@@ -793,10 +793,73 @@
+diff -Naur a/kernel-open/nvidia/nv-acpi.c b/kernel-open/nvidia/nv-acpi.c
+--- a/kernel-open/nvidia/nv-acpi.c	2026-11-19 20:33:09.199511280 +0200
++++ b/kernel-open/nvidia/nv-acpi.c	2026-11-19 20:33:09.307090609 +0200
+@@ -793,10 +793,58 @@
          pathname   = "\\_SB.NPCF._DSM";
      }
  
@@ -56,21 +57,39 @@
 +        }
 +    }
 +
-+    if (rmStatus == NV_OK && acpiNvpcfDsmFunction && acpiDsmSubFunction == 0)
-+    {
-+        if (pOutData && pSize && *pSize >= 1)
-+        {
-+            nv_printf(NV_DBG_ERRORS,
-+                      "NVRM: Patching Surface NVPCF Function 0 mask from 0x%02x to 0xFF\n",
-+                      ((NvU8 *)pOutData)[0]);
-+            ((NvU8 *)pOutData)[0] = 0xFF;
-+            if (*pSize >= 2)
-+            {
-+                ((NvU8 *)pOutData)[1] |= 0x01;
-+            }
-+        }
-+    }
-+
      os_free_mem(argument3);
      return rmStatus;
  }
+diff -Naur a/src/nvidia/arch/nvalloc/unix/src/osapi.c b/src/nvidia/arch/nvalloc/unix/src/osapi.c
+--- a/src/nvidia/arch/nvalloc/unix/src/osapi.c	2026-11-19 20:33:09.222149998 +0200
++++ b/src/nvidia/arch/nvalloc/unix/src/osapi.c	2026-11-19 20:33:09.308389271 +0200
+@@ -5645,6 +5645,7 @@
+     void              *fp;
+     THREAD_STATE_NODE threadState;
+     NV_STATUS         rmStatus = NV_OK;
++    nv_state_t        *target_nv = NULL;
+ 
+     NV_ENTER_RM_RUNTIME(sp,fp);
+     threadStateInit(&threadState, THREAD_STATE_FLAGS_NONE);
+@@ -5662,6 +5663,7 @@
+             {
+                gpuNotifySubDeviceEvent(pGpu, NV2080_NOTIFIERS_NVPCF_EVENTS,
+                                        NULL, 0, 0, 0);
++               target_nv = nv;
+             }
+             os_unref_dynamic_power(nv, NV_DYNAMIC_PM_FINE);
+         }
+@@ -5669,6 +5671,13 @@
+     }
+ 
+     threadStateFree(&threadState, THREAD_STATE_FLAGS_NONE);
++
++    if (target_nv != NULL)
++    {
++        NV_PRINTF(LEVEL_ERROR, "NVRM: Surface NVPCF 0xC0: triggering RmAcpiEventPfmReqHndlrEventStatusChange to apply 50W TGP\n");
++        RmAcpiEventPfmReqHndlrEventStatusChange(target_nv);
++    }
++
+     NV_EXIT_RM_RUNTIME(sp,fp);
+ }
+ 
