@@ -141,21 +141,26 @@ systemctl enable surface-dgpu-init.service
 /usr/local/bin/surface-dgpu-init
 
 # Check and apply nvidia-open-dkms NVPCF patch for 50W Dynamic Boost
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NVIDIA_SRC=$(find /usr/src -maxdepth 1 -name "nvidia-*" -type d 2>/dev/null | sort -V | tail -n 1)
-PATCH_FILE="$(dirname "$0")/patches/nvidia-nvpcf-surface.patch"
+PATCH_FILE="$SCRIPT_DIR/patches/nvidia-nvpcf-surface.patch"
+
 if [ -n "$NVIDIA_SRC" ] && [ -f "$PATCH_FILE" ]; then
-    if ! grep -q "Synthesized Surface DC Power Limits Table" "$NVIDIA_SRC/kernel-open/nvidia/nv-acpi.c" 2>/dev/null; then
-        echo "      Applying NVPCF Dynamic Boost patch to $NVIDIA_SRC..."
-        patch -p1 -d "$NVIDIA_SRC" -i "$PATCH_FILE" || true
+    if [ ! -d "$NVIDIA_SRC/src/nvidia" ]; then
+        echo "[!] Note: Open kernel module source (nvidia-open-dkms) not detected in $NVIDIA_SRC."
+        echo "    For full 50W hardware Dynamic Boost, please install nvidia-open-dkms (open-gpu-kernel-modules)."
+    elif ! grep -q "CONFIGURE_TURBO_V2" "$NVIDIA_SRC/src/nvidia/arch/nvalloc/unix/src/osapi.c" 2>/dev/null; then
+        echo "      Applying NVPCF 50W Turbo Engine patch to $NVIDIA_SRC..."
+        patch -p1 -N --batch -d "$NVIDIA_SRC" -i "$PATCH_FILE" || true
         NV_VER=$(basename "$NVIDIA_SRC" | sed 's/nvidia-//')
         KVER=$(uname -r)
         if command -v dkms >/dev/null 2>&1; then
-            echo "      Rebuilding and installing patched NVIDIA DKMS module..."
+            echo "      Rebuilding and installing patched NVIDIA DKMS module for $KVER..."
             dkms build -m "nvidia/$NV_VER" -k "$KVER" --force || true
             dkms install -m "nvidia/$NV_VER" -k "$KVER" --force || true
         fi
     else
-        echo "      NVIDIA NVPCF Dynamic Boost patch already present."
+        echo "      NVIDIA NVPCF 50W Turbo Engine patch already present."
     fi
     # Mask incompatible nvidia-powerd (conflicts with Surface ACPI MSHW0216 power steering and forces 35W lock)
     if command -v systemctl >/dev/null 2>&1; then
@@ -192,4 +197,6 @@ fi
 
 echo ""
 echo "[+] SUCCESS! Fix installed."
-echo "    Please reboot your laptop to activate D3cold power management."
+echo "    1. Please reboot your laptop to load the patched driver and activate D3cold."
+echo "    2. IMPORTANT: Keep your AC charger connected for 50W TGP."
+echo "       (On battery power, Microsoft Surface EC hardware clamps GPU to 35W)."

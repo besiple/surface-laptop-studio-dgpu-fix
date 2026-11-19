@@ -85,6 +85,15 @@ Name (GAMX, 0x32)    // AC Max TGP: 50W (0x32 = 50)
 
 ---
 
+## 📋 Prerequisites & Hardware Requirements
+
+Before running the installer, ensure your system has:
+1. **`nvidia-open-dkms`**: The 50W Dynamic Boost patch compiles against NVIDIA's open-source kernel modules (`open-gpu-kernel-modules`). On Arch Linux, install `nvidia-open-dkms` (not the closed-source `nvidia-dkms`).
+2. **AC Charger Connected**: 50W Dynamic Boost requires wall power. On battery power (DC mode), the Microsoft Surface EC hardware arbiter clamps GPU consumption to 35W (`GDMX=35W`) to avoid rapid battery degradation.
+3. **`linux-surface` Kernel**: Recommended for full hardware sensor, touchscreen, and ACPI support.
+
+---
+
 ## 📦 Automated Installation
 
 Clone this repository and run the automated installer:
