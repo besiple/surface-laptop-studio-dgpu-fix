@@ -14,16 +14,16 @@ Tested live on **Surface Laptop Studio (Model 1964)** with an Intel Core i7-1137
 
 | Metric | Before (Stock 35W Base Floor) | After (50W TGP Unlocked) | Delta |
 | :--- | :---: | :---: | :---: |
-| **GPU Power Draw** | 34.0 W (hard limit) | **49.0 W** | **+44.1%** |
-| **GPU Core Clock** | 1216 – 1243 MHz | **1593 – 1740 MHz** | **+31.2%** |
-| **Average Framerate** | 26 – 29 FPS | **51 FPS** | **+88.9% (Almost 2x!)** |
-| **Frametime** | 34.2 – 37.9 ms | **19.8 ms** | **-47.8% (Smooth)** |
-| **GPU Temperature** | 63°C | **72°C** | Stable & well within thermal spec |
+| **GPU Power Draw** | 34.0 W (hard limit) | **47.0 – 50.0 W** | **+44.1%** |
+| **GPU Core Clock** | 1268 MHz | **1510 – 1740 MHz** | **+31.2%** |
+| **Average Framerate** | 33 FPS | **40 – 51 FPS** | **+54.5% to +88.9%** |
+| **Frametime** | 30.1 ms | **19.8 – 24.9 ms** | **-34.2% (Smooth)** |
+| **GPU Temperature** | 65°C | **69 – 72°C** | Stable & well within thermal spec |
 
-### Before: Locked at 35W Base (34.0W / 1216 MHz / 29 FPS)
+### Before: Locked at 35W Base (34.0W / 1268 MHz / 33 FPS)
 ![Before: 35W Lock](assets/before_35w_lock.jpg)
 
-### After: Unlocked to 50W (49.0W / 1593 MHz / 51 FPS)
+### After: Unlocked to 50W (47.0W – 50.0W / 1510 MHz / 40+ FPS)
 ![After: 50W Unlocked](assets/after_50w_unlocked.jpg)
 
 ---
