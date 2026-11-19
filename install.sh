@@ -125,6 +125,7 @@ cat << "EOF" > /usr/lib/systemd/system-sleep/surface-dgpu-init.sh
 #!/bin/bash
 if [ "$1" = "post" ]; then
     /usr/local/bin/surface-dgpu-init
+    systemctl restart nvidia-powerd.service
 fi
 EOF
 chmod +x /usr/lib/systemd/system-sleep/surface-dgpu-init.sh
