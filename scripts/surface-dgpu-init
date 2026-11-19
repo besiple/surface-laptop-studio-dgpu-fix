@@ -1,0 +1,36 @@
+#!/bin/bash
+# ==============================================================================
+# Surface Graphics Power Controller (MSHW0216 / SGPC) Initializer
+# Author: besiple (https://github.com/besiple/surface-laptop-studio-dgpu-fix)
+# Copyright (c) 2026 besiple. All rights reserved.
+# Licensed under the MIT License.
+# ==============================================================================
+
+# Ensure NVIDIA driver client is alive before firing ACPI notification
+nvidia-smi -q >/dev/null 2>&1 || true
+
+modprobe acpi_call 2>/dev/null
+if [ -e /proc/acpi/call ]; then
+    # Function 7 with Arg3=1 sets SACT=1, clears negative power offsets, and sends unthrottle notification 0xD1
+    echo '\_SB.SGPC._DSM bbbf19da988b8b7429ced12810bfe9d90 0 7 1' > /proc/acpi/call
+    # Function 3 with Arg3=0x78 sets AC cTGP power offset to +15W (120 * 125mW = +15000mW = +15W cTGP boost)
+    echo '\_SB.SGPC._DSM bbbf19da988b8b7429ced12810bfe9d90 0 3 0x78' > /proc/acpi/call
+    # Function 2 with Arg3=0x0320 sets SPWR to 50W (800 * 0.0625W = 50.0W) and notifies NPCF (0xC0)
+    echo '\_SB.SGPC._DSM bbbf19da988b8b7429ced12810bfe9d90 0 2 0x0320' > /proc/acpi/call
+    # Function 1 with Arg3=1 enables SMF Boost
+    echo '\_SB.SGPC._DSM bbbf19da988b8b7429ced12810bfe9d90 0 1 1' > /proc/acpi/call
+fi
+
+# Apply VRAM Memory Clock Offset (+650 MHz / 1300 MT/s effective sweet spot) via NVML
+python3 -c "
+import ctypes
+try:
+    nvml = ctypes.CDLL('libnvidia-ml.so.1')
+    nvml.nvmlInit()
+    h = ctypes.c_void_p()
+    if nvml.nvmlDeviceGetHandleByIndex(0, ctypes.byref(h)) == 0:
+        nvml.nvmlDeviceSetMemClkVfOffset(h, 1300)
+    nvml.nvmlShutdown()
+except Exception:
+    pass
+" 2>/dev/null || true
