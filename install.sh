@@ -151,6 +151,13 @@ if [ -n "$NVIDIA_SRC" ] && [ -f "$PATCH_FILE" ]; then
     else
         echo "      NVIDIA NVPCF Dynamic Boost patch already present."
     fi
+    # Patch nvidia-powerd binary if needed (bypasses uninitialized DC controller crash on Surface)
+    POWERD_PATCH="$(dirname "$0")/scripts/patch_nvidia_powerd.py"
+    if [ -f "$POWERD_PATCH" ] && [ -f /usr/bin/nvidia-powerd ]; then
+        echo "      Patching /usr/bin/nvidia-powerd for Surface compatibility..."
+        python3 "$POWERD_PATCH" /usr/bin/nvidia-powerd || true
+    fi
+
     # Enable nvidia-powerd for 50W Dynamic Boost
     if command -v systemctl >/dev/null 2>&1; then
         echo "      Enabling nvidia-powerd.service..."
