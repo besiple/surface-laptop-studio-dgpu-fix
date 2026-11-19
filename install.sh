@@ -109,8 +109,7 @@ cat << "EOF" > /etc/systemd/system/surface-dgpu-init.service
 Description=Initialize Surface Graphics Power Controller (Fix 10W Bug)
 DefaultDependencies=no
 After=systemd-modules-load.service
-Before=display-manager.service graphical.target
-Conflicts=nvidia-powerd.service
+Before=display-manager.service graphical.target nvidia-powerd.service
 
 [Service]
 Type=oneshot
@@ -151,12 +150,12 @@ if [ -n "$NVIDIA_SRC" ] && [ -f "$PATCH_FILE" ]; then
     else
         echo "      NVIDIA NVPCF Dynamic Boost patch already present."
     fi
-    # Mask incompatible nvidia-powerd (crashes on Surface without DSM 3x/DC table and forces 35W lock)
+    # Enable nvidia-powerd for 50W Dynamic Boost
     if command -v systemctl >/dev/null 2>&1; then
-        echo "      Masking incompatible nvidia-powerd.service..."
-        systemctl stop nvidia-powerd 2>/dev/null || true
-        systemctl disable nvidia-powerd 2>/dev/null || true
-        systemctl mask nvidia-powerd 2>/dev/null || true
+        echo "      Enabling nvidia-powerd.service..."
+        systemctl unmask nvidia-powerd 2>/dev/null || true
+        systemctl enable nvidia-powerd 2>/dev/null || true
+        systemctl restart nvidia-powerd 2>/dev/null || true
     fi
 fi
 
