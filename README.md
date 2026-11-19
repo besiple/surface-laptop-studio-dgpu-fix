@@ -21,10 +21,10 @@ Tested live on **Surface Laptop Studio (Model 1964)** with an Intel Core i7-1137
 | **GPU Temperature** | 65°C | **69 – 72°C** | Stable & well within thermal spec |
 
 ### Before: Locked at 35W Base (34.0W / 1268 MHz / 33 FPS)
-![Before: 35W Lock](assets/before_35w_lock.jpg)
+![Before: 35W Lock](assets/sls_benchmark_35w_lock.jpg)
 
 ### After: Unlocked to 50W (47.0W – 50.0W / 1510 MHz / 40+ FPS)
-![After: 50W Unlocked](assets/after_50w_unlocked.jpg)
+![After: 50W Unlocked](assets/sls_benchmark_50w_unlocked.jpg)
 
 ---
 
