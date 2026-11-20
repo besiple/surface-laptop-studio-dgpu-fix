@@ -193,7 +193,7 @@ Detailed technical writeups and reverse engineering dumps are preserved in the `
 ## 🤝 Credits & Acknowledgements
 
 * **besiple** — Research, reverse engineering, hardware validation, and repository author.
-* **Google DeepMind Antigravity & Claude Opus 5.5** — Collaborative ACPI reverse engineering, driver source analysis, and disassembly.
+* **Gemini 3.8 Antigravity & Claude Opus 5.5** — Collaborative ACPI reverse engineering, driver source analysis, and disassembly.
 
 ---
 
