@@ -87,10 +87,10 @@ Name (GAMX, 0x32)    // AC Max TGP: 50W (0x32 = 50)
 
 ## 📋 Prerequisites & Hardware Requirements
 
-Before running the installer, ensure your system has:
-1. **`nvidia-open-dkms`**: The 50W Dynamic Boost patch compiles against NVIDIA's open-source kernel modules (`open-gpu-kernel-modules`). On Arch Linux, install `nvidia-open-dkms` (not the closed-source `nvidia-dkms`).
-2. **AC Charger Connected**: 50W Dynamic Boost requires wall power. On battery power (DC mode), the Microsoft Surface EC hardware arbiter clamps GPU consumption to 35W (`GDMX=35W`) to avoid rapid battery degradation.
-3. **`linux-surface` Kernel**: Recommended for full hardware sensor, touchscreen, and ACPI support.
+Before running the installer, ensure your system meets:
+1. **`linux-surface` Kernel**: Recommended for full hardware sensor, touchscreen, and Surface ACPI support.
+2. **AC Charger Connected**: 50W Dynamic Boost requires wall power. On battery power (DC mode), the Microsoft Surface EC hardware arbiter clamps GPU consumption to 35W (`GDMX=35W`) to avoid battery degradation.
+3. **`nvidia-open-dkms` (Optional, only for 50W Dynamic Boost)**: The optional 50W Dynamic Boost patch compiles against NVIDIA's open-source kernel modules (`open-gpu-kernel-modules`). If you only want the 10W sleep throttle fix at the factory 35W Base TGP, standard stock drivers work fine without patching.
 
 ---
 
@@ -106,31 +106,82 @@ sudo ./install.sh
 sudo reboot
 ```
 
-### Installation Options:
-* **`sudo ./install.sh`** (Default): Installs the 50W unlock + 10W sleep throttle fix with stock memory clocks. Prompts interactively if you'd like to enable the optional +650 MHz VRAM overclock.
-* **`sudo ./install.sh --mem-oc`**: Enables both the 50W unlock and the +650 MHz VRAM memory overclock (6.15 GHz) non-interactively.
-* **`sudo ./install.sh --no-oc`**: Forces stock VRAM memory clocks non-interactively.
+### Installation Options & CLI Flags:
+
+When run without flags (`sudo ./install.sh`), the installer prompts you interactively for optional components. You can also pass flags for automated or non-interactive deployment:
+
+| Flag | Description |
+| :--- | :--- |
+| *(no flags)* | **Interactive Mode**: Prompts whether to apply the NVPCF 50W kernel patch and whether to enable the +650 MHz VRAM OC. |
+| `--nvpcf-patch` | Apply the custom `nvidia-open-dkms` NVPCF Turbo patch to unlock full 50W Dynamic Boost. |
+| `--no-nvpcf-patch` | Skip kernel module patching. Permanently fixes the 10W sleep throttle bug and provides the factory 35W Base TGP with untouched vendor drivers. |
+| `--mem-oc` | Enable the +650 MHz VRAM memory overclock sweet spot (6.15 GHz) via NVML. |
+| `--no-oc` | Keep factory stock memory clocks (5.5 GHz). |
+
+#### Deployment Examples:
+```bash
+# Recommended full power setup (50W Dynamic Boost + 6.15 GHz VRAM OC):
+sudo ./install.sh --nvpcf-patch --mem-oc
+
+# Safe ACPI-only fix (fixes 10W bug at factory 35W TGP, stock drivers, stock clocks):
+sudo ./install.sh --no-nvpcf-patch --no-oc
+```
 
 ### What `install.sh` does:
-1. Installs and loads the `acpi_call` kernel module.
-2. Deploys `/usr/local/bin/surface-dgpu-init` to configure `MSHW0216` (50W TGP + SACT=1 unthrottle).
-3. Configures `surface-dgpu-init.service` and systemd sleep hook (`/usr/lib/systemd/system-sleep/surface-dgpu-init.sh`) so the GPU stays unlocked across boots, reboots, and sleep resumes.
-4. Enables runtime power management (RTD3) in `/etc/modprobe.d/nvidia-runtimepm.conf` and `/etc/udev/rules.d/80-nvidia-pm.rules` for **0W D3cold idle**.
-5. Rebuilds your initramfs (`mkinitcpio`, `dracut`, or `update-initramfs`).
+1. **Root verification**: Immediately verifies root privileges before executing any prompts or actions.
+2. **Installs and loads `acpi_call`**: Configures kernel module autoloading via `/etc/modules-load.d/acpi_call.conf`.
+3. **Deploys `/usr/local/bin/surface-dgpu-init`**: Configures `MSHW0216` (sets `SACT=1`, clears negative power offsets, emits unthrottle event `0xD1`, and configures SGPC power steering).
+4. **Configures `surface-dgpu-init.service` and systemd sleep hook** (`/usr/lib/systemd/system-sleep/surface-dgpu-init.sh`) so the GPU stays unlocked across boots and sleep resumes.
+5. **(Optional) Safely patches `nvidia-open-dkms`**: Verifies with `patch --dry-run` first before modifying files, parses package metadata directly from `dkms.conf`, rebuilds with DKMS, and masks conflicting `nvidia-powerd.service`.
+6. **Enables Runtime D3 (RTD3) & Wayland sleep stability**: Configures `NVreg_DynamicPowerManagement=0x02` and `NVreg_PreserveVideoMemoryAllocations=1` in `/etc/modprobe.d/nvidia-runtimepm.conf`, adds udev rules for 0W D3cold idle, and enables `nvidia-suspend`, `nvidia-hibernate`, and `nvidia-resume` services.
+7. **Rebuilds initramfs** (`mkinitcpio`, `update-initramfs`, or `dracut`).
 
 ---
 
 ## ⚡ Memory Overclock (+650 MHz / 6.15 GHz)
 
-The RTX 3050 Ti Mobile memory runs at 5501 MHz default. Testing demonstrated:
+The RTX 3050 Ti Mobile GDDR6 memory runs at 5501 MHz default. Testing demonstrated:
 * Default: 5501 MHz
 * +500 MHz: 6001 MHz
 * **+650 MHz (6151 MHz / 6.15 GHz): Maximum stable throughput** *(Optimal sweet spot without EDC error-correction overhead)*
 * +750 MHz: 6251 MHz (EDC latency begins degrading memory throughput)
 
-Apply dynamically with `nvidia-settings`:
+### Wayland-Native NVML Implementation
+On modern Linux desktop environments running Wayland (such as GNOME or KDE Plasma), legacy tools like `nvidia-settings` fail because they require an active X11 display server.
+
+This project applies the memory clock offset (+650 MHz / +1300 effective offset) directly at the driver level using the **NVIDIA Management Library (NVML)** (`libnvidia-ml.so.1`) via lightweight Python `ctypes` inside `/usr/local/bin/surface-dgpu-init`. This works completely natively on Wayland, X11, and headless sessions with zero GUI dependencies.
+
+#### Manual NVML Commands:
 ```bash
-nvidia-settings -a "[gpu:0]/GPUMemoryTransferRateOffsetAllPerformanceLevels=1300"
+# Apply +650 MHz (+1300 MT/s effective) VRAM OC dynamically:
+python3 -c "import ctypes; nv=ctypes.CDLL('libnvidia-ml.so.1'); nv.nvmlInit(); h=ctypes.c_void_p(); nv.nvmlDeviceGetHandleByIndex(0, ctypes.byref(h)); nv.nvmlDeviceSetMemClkVfOffset(h, 1300); nv.nvmlShutdown()"
+
+# Revert to factory stock VRAM clocks (0 offset):
+python3 -c "import ctypes; nv=ctypes.CDLL('libnvidia-ml.so.1'); nv.nvmlInit(); h=ctypes.c_void_p(); nv.nvmlDeviceGetHandleByIndex(0, ctypes.byref(h)); nv.nvmlDeviceSetMemClkVfOffset(h, 0); nv.nvmlShutdown()"
+```
+
+To permanently disable the VRAM overclock, re-run `sudo ./install.sh --no-oc` (or remove the Python block from `/usr/local/bin/surface-dgpu-init`).
+
+---
+
+## 🔄 Maintenance, Driver Updates & Reverting
+
+### What happens after an NVIDIA driver update?
+When your distribution updates `nvidia-open-dkms` (e.g., via `pacman -Syu`), your package manager replaces `/usr/src/nvidia-*` with fresh upstream vendor code.
+* **To re-enable 50W Dynamic Boost**: Simply run `sudo ./install.sh --nvpcf-patch` again. The installer validates the patch against the new driver with `--dry-run` and rebuilds the DKMS module.
+* **If you do nothing**: The system will safely boot into the new unpatched vendor driver. The 10W sleep throttle fix, RTD3 0W idle sleep, and factory 35W Base TGP remain fully functional.
+
+### Reverting the NVPCF patch to clean stock drivers:
+If you previously installed the NVPCF patch and want to revert to vanilla upstream kernel modules at any time:
+```bash
+# Arch Linux:
+sudo pacman -S --rebuild nvidia-open-dkms
+
+# Fedora:
+sudo dnf reinstall akmod-nvidia-open
+
+# Ubuntu / Debian:
+sudo apt install --reinstall nvidia-kernel-source-open
 ```
 
 ---
@@ -140,9 +191,9 @@ nvidia-settings -a "[gpu:0]/GPUMemoryTransferRateOffsetAllPerformanceLevels=1300
 After installation / reboot:
 
 ```bash
-# 1. Verify 50.00 W Current Power Limit ceiling:
+# 1. Verify Current Power Limit ceiling (50W if patched, 35W if stock):
 nvidia-smi -q -d POWER | grep -A 5 "GPU Ceiling Power Limit"
-# Output:
+# Output (with 50W patch):
 #     GPU Ceiling Power Limit
 #         Current Power Limit : 50.00 W
 #         Default Power Limit : 35.00 W
@@ -173,12 +224,22 @@ nvidia-smi -q -d CLOCK | grep -A 5 "Max Clocks"
 #   Pushes 100% GPU saturation up to the full 50.0W ceiling.
 ```
 
-### Uninstallation
+---
 
-To revert all changes, restore factory power limits (35W), and remove services:
+## 🗑️ Uninstallation
+
+To revert all configuration changes, restore factory power limits (35W), reset VRAM offsets, and remove services:
 ```bash
 sudo ./uninstall.sh
 ```
+`uninstall.sh` will:
+1. Stop and disable `surface-dgpu-init.service` and power management services.
+2. Unmask `nvidia-powerd.service`.
+3. Reset VRAM memory clock offsets to 0 MHz via NVML.
+4. Remove installed scripts, systemd units, modprobe options, and udev rules.
+5. Reset `MSHW0216` ACPI registers to default 35W.
+6. Rebuild initramfs to remove persistent power management rules.
+*(If you installed the NVPCF kernel patch, reinstall `nvidia-open-dkms` as instructed above to restore unpatched vendor kernel modules).*
 
 ---
 
@@ -202,4 +263,3 @@ Detailed technical writeups and reverse engineering dumps are preserved in the `
 This project is licensed under the [MIT License](LICENSE) — Copyright (c) 2026 **besiple**.
 
 > **Notice on Attribution**: You are free to use, fork, adapt, and integrate this solution into your own projects, scripts, or system utilities (such as `surface-control` or `linux-surface`). In accordance with the MIT License, **explicit attribution to the original author (besiple)** and a link back to this repository must be retained in all copies or substantial portions of the software.
-
