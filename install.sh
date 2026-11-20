@@ -26,14 +26,15 @@ done
 
 # Root privilege check MUST be performed before any user interaction or system changes
 if [ "$EUID" -ne 0 ]; then
-  echo "[-] Please run as root (e.g. sudo ./install.sh)"
-  exit 1
+    echo "[-] Please run as root (e.g. sudo ./install.sh)"
+    exit 1
 fi
 
 echo "=== Surface Laptop Studio dGPU 10W Bug Fix & 50W Enabler (by besiple) ==="
 
 ENABLE_NVPCF_PATCH=false
 NVPCF_PATCH_EXPLICIT=false
+NVPCF_PATCH_APPLIED=false
 ENABLE_MEM_OC=false
 MEM_OC_EXPLICIT=false
 
@@ -206,6 +207,7 @@ if [ "$ENABLE_NVPCF_PATCH" = true ]; then
 
         if grep -q "CONFIGURE_TURBO_V2" "$NVIDIA_SRC/src/nvidia/arch/nvalloc/unix/src/osapi.c" 2>/dev/null; then
             echo "      NVIDIA NVPCF 50W Turbo Engine patch is already applied to $NVIDIA_SRC."
+            NVPCF_PATCH_APPLIED=true
         else
             echo "      Validating NVPCF 50W patch against $NVIDIA_SRC ($DKMS_PKG_NAME/$DKMS_PKG_VER)..."
             if patch --dry-run -p1 -N --batch -d "$NVIDIA_SRC" -i "$PATCH_FILE" >/dev/null 2>&1; then
@@ -224,6 +226,7 @@ if [ "$ENABLE_NVPCF_PATCH" = true ]; then
                         exit 1
                     fi
                     echo "      Patched NVIDIA DKMS module successfully built and installed."
+                    NVPCF_PATCH_APPLIED=true
                 else
                     echo "[-] Error: 'dkms' command not found. Cannot rebuild NVIDIA kernel module."
                     exit 1
@@ -235,8 +238,8 @@ if [ "$ENABLE_NVPCF_PATCH" = true ]; then
             fi
         fi
 
-        # Mask incompatible nvidia-powerd (conflicts with Surface ACPI MSHW0216 power steering and forces 35W lock)
-        if command -v systemctl >/dev/null 2>&1; then
+        # Mask incompatible nvidia-powerd only when the NVPCF patch is active
+        if [ "$NVPCF_PATCH_APPLIED" = true ] && command -v systemctl >/dev/null 2>&1; then
             echo "      Masking conflicting nvidia-powerd.service..."
             systemctl stop nvidia-powerd 2>/dev/null || true
             systemctl disable nvidia-powerd 2>/dev/null || true
@@ -281,7 +284,7 @@ fi
 
 echo ""
 echo "[+] SUCCESS! Fix installed."
-if [ "$ENABLE_NVPCF_PATCH" = true ]; then
+if [ "$NVPCF_PATCH_APPLIED" = true ]; then
     echo "    1. 50W Dynamic Boost: Patch applied (requires AC charger connected)."
 else
     echo "    1. 35W Base TGP: 10W sleep throttle fix active (unpatched stock driver mode)."
