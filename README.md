@@ -56,9 +56,11 @@ Tested on **Surface Laptop Studio (Model 1964)** (i7-11370H, RTX 3050 Ti Mobile)
 | **Frametime** | 30.1 ms | **19.8 – 24.9 ms** | -17% to -34% |
 | **Temperature** | 65°C | **69 – 72°C** | +4 to +7°C |
 
-| Before: 35W Lock (34W / 1268 MHz / 33 FPS) | After: 50W Unlocked (47–50W / 1510 MHz / 40+ FPS) |
-| :---: | :---: |
-| ![Before: 35W Lock](assets/sls_benchmark_35w_lock.jpg) | ![After: 50W Unlocked](assets/sls_benchmark_50w_unlocked.jpg) |
+### Before: 35W Base Lock (34W / 1268 MHz / 33 FPS)
+![Before: 35W Lock](assets/sls_benchmark_35w_lock.jpg)
+
+### After: 50W TGP Unlocked (47–50W / 1510 MHz / 40+ FPS)
+![After: 50W Unlocked](assets/sls_benchmark_50w_unlocked.jpg)
 
 ---
 
