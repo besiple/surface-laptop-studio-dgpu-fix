@@ -10,7 +10,7 @@ A complete, production-ready solution for the **Microsoft Surface Laptop Studio*
 
 ## 🚀 Performance Proof & In-Game Benchmarks
 
-Tested live on **Surface Laptop Studio (Model 1964)** with an Intel Core i7-11370H and NVIDIA GeForce RTX 3050 Ti Mobile running *Minecraft with heavy BSL / Iris Shaders* under Arch Linux (`linux-surface` kernel 7.2.15):
+Tested live on **Surface Laptop Studio (Model 1964)** with an Intel Core i7-11370H and NVIDIA GeForce RTX 3050 Ti Mobile running *Minecraft with heavy BSL / Iris Shaders* under Arch Linux (`linux-surface` kernels 7.2.15 & 7.3.4, NVIDIA driver 620.73.04 / `nvidia-open-dkms`):
 
 | Metric | Before (Stock 35W Base Floor) | After (50W TGP Unlocked) | Delta |
 | :--- | :---: | :---: | :---: |
@@ -187,7 +187,6 @@ sudo ./uninstall.sh
 Detailed technical writeups and reverse engineering dumps are preserved in the `docs/` folder:
 * [`docs/SGPC_50W_UNLOCKED.md`](docs/SGPC_50W_UNLOCKED.md): Full technical breakdown of the `MSHW0216` power steering registers, ACPI notify codes (`0xC0`, `0xD1`, `0xD5`), and driver PMGR Turbo V2 evaluation.
 * [`docs/acpi/SSDT7.dsl`](docs/acpi/SSDT7.dsl): Disassembled ACPI table containing `\_SB.SGPC` and `\_SB.NPCF`.
-* [`docs/OPUS_DIAGNOSTICS_REPORT.md`](docs/OPUS_DIAGNOSTICS_REPORT.md): Joint reversing notes with Claude Opus on `nvidia-powerd` NVPCF tables.
 
 ---
 

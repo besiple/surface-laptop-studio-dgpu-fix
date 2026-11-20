@@ -4,8 +4,8 @@
 **Hardware**: Microsoft Surface Laptop Studio (Model 1964)  
 **CPU**: Intel Core i7-11370H  
 **GPU**: NVIDIA GeForce RTX 3050 Ti Mobile (GA107M, PCI `10de:25a0`, Subsystem `1414:0054`)  
-**Kernel**: `linux-surface` 7.2.15-arch1-1-surface  
-**Driver**: NVIDIA Open GPU Kernel Modules 615.78.08  
+**Kernel**: `linux-surface` 7.2.15 & 7.3.4  
+**Driver**: NVIDIA Open GPU Kernel Modules 615.78.08 & 620.73.04  
 
 ---
 
