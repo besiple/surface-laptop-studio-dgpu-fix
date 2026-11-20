@@ -175,7 +175,7 @@ When your distribution updates `nvidia-open-dkms` (e.g., via `pacman -Syu`), you
 If you previously installed the NVPCF patch and want to revert to vanilla upstream kernel modules at any time:
 ```bash
 # Arch Linux:
-sudo pacman -S --rebuild nvidia-open-dkms
+sudo pacman -S nvidia-open-dkms
 
 # Fedora:
 sudo dnf reinstall akmod-nvidia-open
